@@ -8,6 +8,7 @@ from predict_module.tuning_lm_with_rl import tuning_lm_with_rl
 from transformers import LlamaTokenizer, pipeline #, AutoModelForCausalLM, BitsAndBytesConfig
 from trl import AutoModelForCausalLMWithValueHead
 import os, json
+from tqdm import tqdm
 
 
 class Exp_Model:
@@ -20,12 +21,13 @@ class Exp_Model:
         # Collect demonstration data
         print("Loading Train Agents...")
         data = self.dataloader.load(flag="train")
+        print("Loaded data.")
 
         agent_cls = PredictReflectAgent
         agents = [agent_cls(row['ticker'], row['summary'], row['target']) for _, row in data.iterrows()]
         print("Loaded Train Agents.")
 
-        for agent in agents:
+        for agent in tqdm(agents, desc="Trial 0"):
             agent.run()
 
             if agent.is_correct():
@@ -47,7 +49,7 @@ class Exp_Model:
         comparison_data = []
 
         for trial in range(self.args.num_reflect_trials):
-            for idx, agent in enumerate([a for a in agents if not a.is_correct()]):
+            for idx, agent in enumerate(tqdm([a for a in agents if not a.is_correct()], desc=f"Trial {trial+1}/{self.args.num_reflect_trials}")):
                 prev_response = agent.scratchpad.split('Price Movement: ')[-1]
                 agent.run()
 
