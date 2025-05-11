@@ -1,11 +1,12 @@
 from peft import (
-    prepare_model_for_int8_training,
+    # prepare_model_for_int8_training,
+    prepare_model_for_kbit_training,
     LoraConfig,
     get_peft_model,
     get_peft_model_state_dict,
     set_peft_model_state_dict,
 )
-from transformers import LlamaForCausalLM, LlamaTokenizer
+from transformers import LlamaForCausalLM, LlamaTokenizer, BitsAndBytesConfig
 import os
 import sys
 
@@ -45,16 +46,25 @@ def supervised_finetune(args):
         device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
         GRADIENT_ACCUMULATION_STEPS = GRADIENT_ACCUMULATION_STEPS // world_size
     print(args.model_path)
+    # new config usage
+    quantization_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_compute_dtype=torch.float16,
+    )
     model = LlamaForCausalLM.from_pretrained(
         args.model_path,
-        load_in_4bit=True,
-        device_map=device_map,
+        # load_in_4bit=True,
+        # bnb_4bit_compute_dtype=torch.float16,
+        # new config usage
+        quantization_config=quantization_config,
+        device_map="cuda:0" if device_map=="auto" else device_map,
     )
     tokenizer = LlamaTokenizer.from_pretrained(
         args.model_path, add_eos_token=True
     )
 
-    model = prepare_model_for_int8_training(model)
+    # model = prepare_model_for_int8_training(model)
+    model = prepare_model_for_kbit_training(model)
 
     config = LoraConfig(
         r=LORA_R,
@@ -148,6 +158,8 @@ def supervised_finetune(args):
             ddp_find_unused_parameters=False if ddp else None,
             report_to="wandb" if args.wandb else [],
             ignore_data_skip=args.ignore_data_skip,
+            gradient_checkpointing=True,
+            gradient_checkpointing_kwargs={"use_reentrant": True}
         ),
         data_collator=transformers.DataCollatorForLanguageModeling(
             tokenizer, mlm=False)
