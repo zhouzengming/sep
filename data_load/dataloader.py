@@ -3,6 +3,7 @@ import os, json
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
+from tqdm import tqdm
 
 
 class DataLoader:
@@ -45,7 +46,9 @@ class DataLoader:
     def load(self, flag):
         data = pd.DataFrame()
 
+        dir_id = 0
         for file in os.listdir(self.price_dir):
+            dir_id += 1
             price_path = os.path.join(self.price_dir, file)
             ordered_price_data = np.flip(np.genfromtxt(price_path, dtype=str, skip_header=False), 0)
             ticker = file[:-4]
@@ -58,7 +61,7 @@ class DataLoader:
             else:
                 data_range = range(tes_idx, end_idx)
 
-            for idx in data_range:
+            for idx in tqdm(data_range, desc=f"data_range {dir_id}/{len(os.listdir(self.price_dir))}"):
                 summary_all = ""
 
                 end_date_str = ordered_price_data[idx, 0]
