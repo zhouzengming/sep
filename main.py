@@ -12,15 +12,15 @@ np.random.seed(fix_seed)
 parser = argparse.ArgumentParser(description='generating')
 
 # load data
-parser.add_argument("--price_dir", type=str, default="data/price/preprocessed/")
-parser.add_argument("--tweet_dir", type=str, default="data/tweet/raw/")
+parser.add_argument("--price_dir", type=str, default="data/sample_price/preprocessed/")
+parser.add_argument("--tweet_dir", type=str, default="data/sample_tweet/raw/")
 parser.add_argument("--seq_len", type=int, default=5)
 
 # supervised finetuning
 parser.add_argument("--wandb", action="store_true", default=False)
 parser.add_argument("--data_path", type=str, default="./data/merge_sample.json")
 parser.add_argument("--output_path", type=str, default="./saved_models/lora-Vicuna")
-parser.add_argument("--model_path", type=str, default="lmsys/vicuna-7b-v1.5-16k")
+parser.add_argument("--model_path", type=str, default="./saved_models/lmsys/vicuna-7b-v1.5-16k")
 parser.add_argument("--eval_steps", type=int, default=200)
 parser.add_argument("--save_steps", type=int, default=200)
 parser.add_argument("--resume_from_supervised_checkpoint", type=str, default=None)
@@ -37,7 +37,7 @@ parser.add_argument('--per_device_eval_batch_size', type=int, default=1)
 parser.add_argument('--reward_gradient_accumulation_steps', type=int, default=32)
 parser.add_argument('--reward_learning_rate', type=float, default=2e-5)
 parser.add_argument('--weight_decay', type=int, default=0.001)
-parser.add_argument('--reward_base_model', type=str, default="lmsys/vicuna-7b-v1.5-16k", help="The model that you want to train from the Hugging Face hub. E.g. gpt2, gpt2-xl, bert, etc.")
+parser.add_argument('--reward_base_model', type=str, default="./saved_models/lmsys/vicuna-7b-v1.5-16k", help="The model that you want to train from the Hugging Face hub. E.g. gpt2, gpt2-xl, bert, etc.")
 parser.add_argument('--bf16', type=bool, default=False, help="This essentially cuts the training time in half if you want to sacrifice a little precision and have a supported GPU.")
 parser.add_argument('--num_train_epochs', type=int, default=1, help="The number of training epochs for the reward model.")
 parser.add_argument('--train_subset', type=int, default=100000, help="The size of the subset of the training data to use")
@@ -49,7 +49,7 @@ parser.add_argument('--reward_adapter', type=str, default="./saved_models/reward
 
 # reinforcement learning
 parser.add_argument('--rl_base_model', type=str, default="./saved_models/lora-Vicuna-adapter-merged", help="the model name")
-parser.add_argument('--tokenizer_name', type=str, default="lmsys/vicuna-7b-v1.5-16k", help="the tokenizer name")
+parser.add_argument('--tokenizer_name', type=str, default="./saved_models/lmsys/vicuna-7b-v1.5-16k", help="the tokenizer name")
 parser.add_argument('--reward_model_name', type=str, default="./saved_models/reward_model_vicuna-7b-adapter-merged", help="the reward model name")
 parser.add_argument('--log_with', type=str, default=None, help="use 'wandb' to log with wandb")
 parser.add_argument('--rl_learning_rate', type=float, default=1.4e-5, help="the learning rate")
