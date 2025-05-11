@@ -10,12 +10,19 @@ import torch
 
 class OpenAILLM:
     def __init__(self):
-        self.model = "gpt-3.5-turbo-16k"
+        # self.model = "gpt-3.5-turbo-16k"
+        self.client = openai.OpenAI(
+            # API url
+            base_url='http://127.0.0.1:11434/v1/',
+            # api_key ignored if using OllamaAPI
+            api_key='ollama',
+        )
+        self.model = "llama3.2:1b"
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def __call__(self, prompt):
         messages = [{"role": "user", "content": prompt}]
-        completion = openai.chat.completions.create(model=self.model, messages=messages)
+        completion = self.client.chat.completions.create(model=self.model, messages=messages)
         response = completion.choices[0].message.content
         return response
 
