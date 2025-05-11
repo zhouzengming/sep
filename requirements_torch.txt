@@ -1,0 +1,2 @@
+-i https://download.pytorch.org/whl/cu128
+torch==2.7.0+cu128
